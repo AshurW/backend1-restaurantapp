@@ -16,7 +16,7 @@ const indexRoutes = require('./routes/index')
 const PORT = process.env.PORT || 3000;
 
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/public'));
@@ -30,8 +30,8 @@ const db = mysql.createConnection({
     database: 'db_resty'
 });
 
-db.connect(function(err){
-    if(err){
+db.connect(function (err) {
+    if (err) {
         console.log(err);
         return
     } else {
@@ -48,14 +48,16 @@ app.use(require("express-session")({
     saveUninitialized: false
 }));
 
+app.use(passport.initialize());
+app.use(passport.session());
 
 passport.serializeUser((user, done) => {
-    done(null, user.user_id)
+    done(null, user.id)
 })
 
-passport.deserializeUser((user_id, done) => {
-    db.query("SELECT * FROM users WHERE user_id = ?",
-        [user_id], (err, rows) => {
+passport.deserializeUser((id, done) => {
+    db.query("SELECT * FROM users WHERE id = ?",
+        [id], (err, rows) => {
             done(err, rows[0])
         })
 })
@@ -63,19 +65,19 @@ passport.deserializeUser((user_id, done) => {
 passport.use(
     "local-signup",
     new LocalStrategy({
-            usernameField: "username",
-            passwordField: "password",
-            passReqToCallback: true
-        },
-        function(req, username, password, done)  {
+        usernameField: "username",
+        passwordField: "password",
+        passReqToCallback: true
+    },
+        function (req, username, password, done) {
             db.query("SELECT * FROM users WHERE username = ?",
-                [username], function(err, rows) {
+                [username], function (err, rows) {
                     if (err) {
                         return done(err)
                     }
                     if (rows.length) {
                         return done(null, false, req.flash("signupMessage", "Username already in use!"))
-                    } else { 
+                    } else {
                         let newUser = {
                             username: username,
                             password: bcrypt.hashSync(password, null, null)
@@ -84,11 +86,11 @@ passport.use(
                         let insert = "INSERT INTO users (username, password) VALUES (?,?)";
 
                         db.query(insert, [newUser.username, newUser.password],
-                            function(err, rows)  {
+                            function (err, rows) {
                                 newUser.user_id = rows.insertId;
                                 return done(null, newUser)
                             })
-                            
+
                     }
                 })
         }
@@ -99,10 +101,10 @@ passport.use(
 passport.use(
     "local-login",
     new LocalStrategy({
-            usernameField: "username",
-            passwordField: "password",
-            passReqToCallback: true
-        },
+        usernameField: "username",
+        passwordField: "password",
+        passReqToCallback: true
+    },
         function (req, username, password, done) {
             db.query("SELECT * FROM users WHERE username = ? ", [username],
                 function (err, rows) {
@@ -120,18 +122,20 @@ passport.use(
         })
 )
 
-app.use(function(req, res, next){
+
+
+app.use(function (req, res, next) {
     req.db = db;
     res.locals.currentUser = req.user;
     // res.locals.error = req.flash('error');
     // res.locals.success = req.flash('success');
     next();
- });
+});
 
 app.use('/', indexRoutes);
 app.use('/restaurants', restaurantRoutes);
 app.use('/restaurants/:id/comments', commentRoutes);
 
-app.listen(PORT, function(){
+app.listen(PORT, function () {
     console.log('The Server has started');
 });
