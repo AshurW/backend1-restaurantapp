@@ -32,7 +32,7 @@ router.get('/login', function(req, res) {
     res.render('login');
 });
 //handling login logic
-router.post("/login", passport.authenticate("local", 
+router.post("/login", passport.authenticate("local-login", 
     {
         successRedirect: "/restaurants",
         failureRedirect: "/login"
