@@ -2,15 +2,21 @@
 <div class="container">
     <div class="row">
         <div class="col-md-12">
+            <a href="/restaurants">Go Back</a>
             <div class="thumbnail">
                 <img class="img-responsive" src="<%= restaurant.image %>">
                 <div class="caption-full">
                     <h4><a><%=restaurant.name%></a></h4>
                     <p><%= restaurant.description %></p>
                     <p>
-                        <em>Submitted by <%=  %></em>
+                        <em>Submitted by <%= restaurant.username %></em>
                     </p>
-                   
+                    <% if(currentUser){ %>
+                        <a class="btn btn-xs btn-warning" href="/restaurants/<%= restaurant.id %>/edit">Edit</a>
+                            <form class="delete-form" action="/restaurants/<%= restaurant.id %>?_method=DELETE" method="POST">
+                                <button class="btn btn-xs btn-danger">Delete</button>
+                            </form>
+                    <% }%>   
                 </div>
             </div>
             <div class="well">
@@ -18,7 +24,27 @@
                     <a class="btn btn-success" href="/restaurants/<%= restaurant.id %>/comments/new">Add New Comment</a>
                 </div>
                 <hr>
-                
+                <%  
+                 comments.forEach(function(comment){ %>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <strong>USER</strong>
+                            <span class="pull-right">10 days ago</span>
+                            <p>
+                                <%= comment.rating %> 
+                            </p>
+                            <p>
+                                <%= comment.text %> 
+                            </p>
+                            <% if(currentUser){ %>
+                                <a class="btn btn-xs btn-warning" 
+                                   href="/restaurants/<%=restaurant.id %>/comments/<%=comment.cId %>/edit">Edit</a>
+                                <form class="delete-form" action="/restaurants/<%=restaurant.id %>/comments/<%=comment.cId %>?_method=DELETE" method="POST">
+                                    <input type="submit" class="btn btn-xs btn-danger" value="Delete">
+                                </form>
+                                <hr>
+                            <% } %>
+                <% }); %>
             </div>
         </div>
     </div>

@@ -1,19 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const mysql = require('mysql');
-// const Campground = require('../models/campground');
 const middleware = require("../middleware");
 
-
+//display all restaurants
 router.get('/', function(req, res) {
-    // get all campgrounds from DB
-    // Campground.find({}, function(err, allCampgrounds) {
-    //     if(err) {
-    //         console.log(err);
-    //     } else {
-    //         res.render('campgrounds/index', {campgrounds:allCampgrounds})
-    //     }
-    // })
     const db = req.db;
     db.query('SELECT * FROM restaurants', function(err, rows){
         if(err) {
@@ -27,17 +17,17 @@ router.get('/', function(req, res) {
 });
 
 
-//create campground
-router.post('/', function(req, res) {
+//create restaurant
+router.post('/', middleware.isLoggedIn, function(req, res) {
     const db = req.db;
-    let newCampground = {name: req.body.name, image: req.body.image, description: req.body.description, userid: 1}
+    let newRestaurant = {name: req.body.name, image: req.body.image, description: req.body.description, userid: req.user.id}
     let sql = 'INSERT INTO restaurants SET ?'
-    db.query(sql, newCampground, function(err, result){
+    db.query(sql, newRestaurant, function(err, result){
         if(err) {
             console.log(err);
         } else {
-            console.log(result);
-            res.redirect('/campgrounds');
+            //console.log(result);
+            res.redirect('/restaurants');
         } 
     });
 });
@@ -46,16 +36,32 @@ router.get('/new',  middleware.isLoggedIn, function(req, res) {
     res.render('restaurants/new');
 });
 
+// Show Restaurants
 router.get("/:id", function(req, res){
-    // //find the campground with provided ID
-    // Campground.findById(req.params.id).populate('comments').exec(function(err, foundCampground){
-    //     if(err){
-    //         console.log(err);
-    //     } else {
-    //         //render show template with that campground
-    //         res.render("campgrounds/show", {campground: foundCampground});
-    //     }
-    // });
+    const db = req.db;
+    let sql = `SELECT restaurants.id, restaurants.name, restaurants.image, restaurants.description, users.username FROM restaurants INNER JOIN users ON restaurants.userid = users.id WHERE restaurants.id = ${req.params.id}`;
+    let sql2 = `SELECT * FROM comments WHERE comment_rest_id = ${req.params.id}`;
+    db.query(sql, function(err, rows){
+        if(err) {
+            console.log(err);
+        } else {
+            let data = JSON.parse(JSON.stringify(rows));
+            console.log(data);
+            db.query(sql2, function(err, commentRow){
+                if(err){
+                    console.log(err) 
+                } else {
+                    let commentData = JSON.parse(JSON.stringify(commentRow));
+                    console.log(commentData);
+                    res.render('restaurants/show', {restaurant:data[0], comments:commentData});
+                }
+            })
+        } 
+    });
+});
+
+// EDIT RESTAURANT ROUTE
+router.get("/:id/edit", middleware.isLoggedIn, function(req, res){
     const db = req.db;
     let sql = `SELECT * FROM restaurants WHERE id = ${req.params.id}`;
     db.query(sql, function(err, rows){
@@ -64,39 +70,37 @@ router.get("/:id", function(req, res){
         } else {
             let data = JSON.parse(JSON.stringify(rows));
             //console.log(data);
-            res.render('restaurants/show', {restaurant:data[0]});
+            res.render('restaurants/edit', {restaurant:data[0]});
         } 
     });
 });
 
-// EDIT CAMPGROUND ROUTE
-router.get("/:id/edit", function(req, res){
-    // Campground.findById(req.params.id, function(err, foundCampground){
-    //     res.render("campgrounds/edit", {campground: foundCampground});
-    // });
+// UPDATE RESTAURANT ROUTE
+router.put("/:id", middleware.isLoggedIn, function(req, res){
+    const db = req.db;
+    let sql = `UPDATE restaurants SET name = ?, image = ?, description = ? WHERE id = ${req.params.id}`;
+    db.query(sql, [req.body.restaurant.name, req.body.restaurant.image, req.body.restaurant.description], function(err, rows){
+        if(err) {
+            console.log(err);
+        } else {
+            let data = JSON.parse(JSON.stringify(rows));
+            //console.log(data);
+            res.redirect('/restaurants/' + req.params.id);
+        } 
+    });
 });
 
-// UPDATE CAMPGROUND ROUTE
-router.put("/:id", function(req, res){
-    // find and update the correct campground
-    // Campground.findByIdAndUpdate(req.params.id, req.body.campground, function(err, updatedCampground){
-    //    if(err){
-    //        res.redirect("/campgrounds");
-    //    } else {
-    //        //redirect somewhere(show page)
-    //        res.redirect("/campgrounds/" + req.params.id);
-    //    }
-    // });
-});
+// DESTROY RESTAURANT ROUTE
+router.delete("/:id", middleware.isLoggedIn, function(req, res){
 
-// DESTROY CAMPGROUND ROUTE
-router.delete("/:id", function(req, res){
-//    Campground.findByIdAndRemove(req.params.id, function(err){
-//       if(err){
-//           res.redirect("/campgrounds");
-//       } else {
-//           res.redirect("/campgrounds");
-//       }
-//    });
+    const db= req.db;
+    let sql = `DELETE from restaurants WHERE id = ${req.params.id}`
+    db.query(sql, function(err, rows) {
+        if (err) {
+            console.log(err);
+        } else {
+            res.redirect('/restaurants');
+        }
+    })
 });
 module.exports = router;
