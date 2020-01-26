@@ -27,7 +27,7 @@ router.post("/", middleware.isLoggedIn, function(req, res){
             console.log(err);
             res.redirect('/restaurants')
         } else {
-         let newComment = {text: req.body.comment.text, rating: req.body.comment.rating, comment_user_id:req.user.id, comment_rest_id: req.params.id}
+         let newComment = {text: req.body.comment.text, rating: req.body.comment.rating, comment_user_username:req.user.username, comment_rest_id: req.params.id}
          let sql = 'INSERT INTO comments SET ?'
          db.query(sql, newComment, function(err, result){
              if(err) {

@@ -14,6 +14,7 @@ const indexRoutes = require('./routes/index')
 
 
 const PORT = process.env.PORT || 3000;
+const IP = process.env.IP || 'localhost';
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -136,6 +137,6 @@ app.use('/', indexRoutes);
 app.use('/restaurants', restaurantRoutes);
 app.use('/restaurants/:id/comments', commentRoutes);
 
-app.listen(PORT, function () {
+app.listen(PORT, IP, function () {
     console.log('The Server has started');
 });

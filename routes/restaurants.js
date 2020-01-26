@@ -40,19 +40,19 @@ router.get('/new',  middleware.isLoggedIn, function(req, res) {
 router.get("/:id", function(req, res){
     const db = req.db;
     let sql = `SELECT restaurants.id, restaurants.name, restaurants.image, restaurants.description, users.username FROM restaurants INNER JOIN users ON restaurants.userid = users.id WHERE restaurants.id = ${req.params.id}`;
-    let sql2 = `SELECT * FROM comments WHERE comment_rest_id = ${req.params.id}`;
+    let commentSql = `SELECT * FROM comments WHERE comment_rest_id = ${req.params.id}`;
     db.query(sql, function(err, rows){
         if(err) {
             console.log(err);
         } else {
             let data = JSON.parse(JSON.stringify(rows));
             console.log(data);
-            db.query(sql2, function(err, commentRow){
+            db.query(commentSql, function(err, commentRow){
                 if(err){
                     console.log(err) 
                 } else {
                     let commentData = JSON.parse(JSON.stringify(commentRow));
-                    console.log(commentData);
+                    //console.log(commentData);
                     res.render('restaurants/show', {restaurant:data[0], comments:commentData});
                 }
             })
