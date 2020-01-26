@@ -49,20 +49,6 @@ app.use(require("express-session")({
     saveUninitialized: false
 }));
 
-app.use(passport.initialize());
-app.use(passport.session());
-
-passport.serializeUser((user, done) => {
-    done(null, user.id)
-})
-
-passport.deserializeUser((id, done) => {
-    db.query("SELECT * FROM users WHERE id = ?",
-        [id], (err, rows) => {
-            done(err, rows[0])
-        })
-})
-
 passport.use(
     "local-signup",
     new LocalStrategy({
@@ -77,7 +63,7 @@ passport.use(
                         return done(err)
                     }
                     if (rows.length) {
-                        return done(null, false, req.flash("signupMessage", "Username already in use!"))
+                        return done(null, false)
                     } else {
                         let newUser = {
                             username: username,
@@ -88,7 +74,7 @@ passport.use(
 
                         db.query(insert, [newUser.username, newUser.password],
                             function (err, rows) {
-                                newUser.user_id = rows.insertId;
+                                newUser.id = rows.insertId;
                                 return done(null, newUser)
                             })
 
@@ -113,10 +99,10 @@ passport.use(
                         return done(err);
                     }
                     if (!rows.length) {
-                        return done(null, false, req.flash("loginMessage", "User doesn't exist!"))
+                        return done(null, false)
                     }
                     if (!bcrypt.compareSync(password, rows[0].password)) {
-                        return done(null, false, req.flash("loginMessage", "Password is incorrect!"))
+                        return done(null, false)
                     }
                     return done(null, rows[0])
                 })
@@ -124,6 +110,19 @@ passport.use(
 )
 
 
+passport.serializeUser((user, done) => {
+    done(null, user.id)
+})
+
+passport.deserializeUser((id, done) => {
+    db.query("SELECT * FROM users WHERE id = ?",
+        [id], (err, rows) => {
+            done(err, rows[0])
+        })
+})
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(function (req, res, next) {
     req.db = db;

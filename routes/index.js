@@ -15,8 +15,8 @@ router.get('/register', function(req, res) {
 router.post('/register', passport.authenticate("local-signup", {
     successRedirect: "/restaurants",
     failureRedirect: "/register",
-    failureFlash: true
-}));
+}),function (req, res) {}
+);
 
 //show login form
 router.get('/login', function(req, res) {
@@ -26,9 +26,8 @@ router.get('/login', function(req, res) {
 router.post("/login", passport.authenticate("local-login", {
     successRedirect: "/restaurants",
     failureRedirect: "/login",
-    failureFlash: true
 }),function (req, res) {}
-)
+);
 
 //logut route
 router.get("/logout", function(req, res){

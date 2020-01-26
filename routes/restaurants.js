@@ -46,7 +46,7 @@ router.get("/:id", function(req, res){
             console.log(err);
         } else {
             let data = JSON.parse(JSON.stringify(rows));
-            console.log(data);
+            //console.log(data);
             db.query(commentSql, function(err, commentRow){
                 if(err){
                     console.log(err) 
