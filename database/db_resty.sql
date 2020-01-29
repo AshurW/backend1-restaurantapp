@@ -28,6 +28,8 @@ SET time_zone = "+00:00";
 -- Table structure for table `comments`
 --
 
+USE ashur;
+
 CREATE TABLE `comments` (
   `cId` int(11) NOT NULL,
   `text` varchar(255) NOT NULL,

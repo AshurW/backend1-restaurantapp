@@ -25,10 +25,11 @@ app.use(methodOverride('_method'));
 app.use(flash());
 
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'db_resty'
+    host: 'xav-p-mariadb01.xavizus.com',
+    user: 'ashur',
+    password: 'hFFYJZLmpP5tVGSy',
+    database: 'ashur',
+    port: 16200
 });
 
 db.connect(function (err) {
@@ -41,7 +42,7 @@ db.connect(function (err) {
 });
 
 // passport config
-db.query('USE db_resty;')
+db.query('USE ashur;')
 
 app.use(require("express-session")({
     secret: 'thisisascretfromashur',
